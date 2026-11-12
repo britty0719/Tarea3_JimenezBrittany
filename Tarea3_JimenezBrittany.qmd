@@ -1,0 +1,34 @@
+---
+title: "Tarea3_JimenezBrittany"
+format: html
+---
+
+```{r}
+#| include: false
+source("cod/funciones_tarea3.R")
+transacciones <- read.csv2("data/transacciones_2025.csv")
+resultado <- alerta.movil(transacciones, 5, 1.75)
+
+# Resultado 1A
+respuesta.1A <- sum(resultado$alerta, na.rm = TRUE)
+
+# Resultado 1B
+respuesta.1B <- resultado |>
+  filter(alerta == TRUE) |>
+  slice_head(n = 1) |>
+  pull(fecha)
+
+# Resultado 1C
+resultado.1C <- alerta.movil(transacciones, 7, 2)
+respuesta.1C <- sum(resultado.1C$alerta, na.rm = TRUE)
+```
+
+## Hoja de respuestas
+
+```{r}
+#| echo: false
+#| results: asis
+cat("RESULTADO_1A =", respuesta.1A, "\n\n")
+cat("RESULTADO_1B =", respuesta.1B, "\n\n")
+cat("RESULTADO_1C =", respuesta.1C, "\n\n")
+```
