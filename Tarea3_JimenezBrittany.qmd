@@ -7,8 +7,12 @@ format: html
 #| include: false
 source("cod/funciones_tarea3.R")
 transacciones <- read.csv2("data/transacciones_2025.csv")
-resultado <- alerta.movil(transacciones, 5, 1.75)
+parametros <- read.csv2("config/parametros_tarea3.csv")
 
+ventana <- as.numeric(parametros$valor[parametros$parametro == "ventana"])
+k.alerta <- as.numeric(parametros$valor[parametros$parametro == "k.alerta"])
+
+resultado <- alerta.movil(transacciones, ventana, k.alerta)
 # Resultado 1A
 respuesta.1A <- sum(resultado$alerta, na.rm = TRUE)
 
