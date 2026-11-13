@@ -36,3 +36,38 @@ cat("RESULTADO_1A =", respuesta.1A, "\n\n")
 cat("RESULTADO_1B =", respuesta.1B, "\n\n")
 cat("RESULTADO_1C =", respuesta.1C, "\n\n")
 ```
+
+### Gráfico de alertas móviles
+
+```{r}
+#| echo: false
+#| include: false
+library(ggplot2)
+resultado$fecha <- as.Date(resultado$fecha, format = "%Y-%m-%d")
+
+grafico.1 <- ggplot(resultado,
+       aes(x = fecha, y = n.tx)) +
+  geom_line(color = "gray", linewidth = 0.7) +
+  geom_point(
+    data = filter(resultado, alerta == TRUE),
+    color = "red",
+    size = 2
+  ) +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b") +
+  labs(
+    title = "Alertas de transacciones durante 2025",
+    x = "Mes",
+    y = "Cantidad de transacciones"
+  ) +
+  theme_minimal()
+
+ggsave(
+  filename = "info/figuras/alertas_moviles.png",
+  plot = grafico.1,
+  width = 10,
+  height = 5,
+  dpi = 300
+)
+```
+![Alertas de transacciones durante 2025](info/figuras/alertas_moviles.png)
+
