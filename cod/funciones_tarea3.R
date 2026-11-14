@@ -71,3 +71,35 @@ benford.canton <- function(df, canal, cantones){
     select(cod_canton, canton, n, mad, clase)
   return(resultado)
 }
+
+# Ejercicio 3
+# Recibe: un df, tasa.anual, canal
+# Devuelve: lista con tabla, tasa.mensual, VA e intereses.
+
+valor.acumulado <- function(df, tasa.anual, canal){
+  tabla <- df |> 
+    filter(canal == .env$canal) |> 
+    mutate(
+      mes = lubridate::month(as.Date(fecha))
+    )
+  
+  resultado <- tabla |> 
+    group_by(mes) |> 
+    summarise(
+      monto = sum(monto_crc, na.rm = TRUE),
+      .groups = "drop"
+    )
+  tasa.mensual = (1 + tasa.anual)^(1/12) - 1
+  resultado <- resultado |> 
+    mutate(
+      factor = (1 + tasa.mensual)^(12 - mes)
+    )
+  VA = sum(resultado$monto * resultado$factor)
+  interes = VA - sum(resultado$monto)
+  return(list(
+    tabla = resultado, 
+    tasa.mensual = tasa.mensual, 
+    va = VA, 
+    interes = interes
+    ))
+}
