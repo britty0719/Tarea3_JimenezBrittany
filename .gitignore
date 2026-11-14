@@ -9,4 +9,4 @@ data/transacciones_2025.csv
 base/
 
 .DS_Store
-Thumbs.db
+Thumbs.db.RDataTmp*
