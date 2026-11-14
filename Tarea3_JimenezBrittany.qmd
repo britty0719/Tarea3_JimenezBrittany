@@ -51,6 +51,22 @@ resultado.2D <- benford.canton(transacciones, "Web", cantones) |>
   slice_head(n = 1) |> 
   pull(canton)
 
+# Ejercicio 3
+
+tasa.anual <- as.numeric(parametros$valor[parametros$parametro == "tasa.anual"])
+canal.interes <- parametros$valor[parametros$parametro == "canal.interes"]
+
+# Resultado 3A
+resultado.3 <- valor.acumulado(transacciones, tasa.anual = tasa.anual, canal = canal.interes)
+resultado.3A <- round(resultado.3$va, 2)
+
+# Resultado 3B
+resultado.3B <- round(resultado.3$interes, 2)
+
+# Resultado 3C
+respuesta.3 <- valor.acumulado(transacciones, tasa.anual = 0.06, canal = "App")
+resultado.3C <- round(respuesta.3$va, 2)
+
 ```
 
 ## Hoja de respuestas
@@ -65,6 +81,9 @@ cat("RESULTADO_2A =", round(resultado.2A, 4), "\n\n")
 cat("RESULTADO_2B =", resultado.2B, "\n\n")
 cat("RESULTADO_2C =", respuesta.2C, "\n\n")
 cat("RESULTADO_2D =", resultado.2D, "\n\n")
+cat("RESULTADO_3A =", round(resultado.3A, 2), "\n\n")
+cat("RESULTADO_3B =", round(resultado.3B, 2), "\n\n")
+cat("RESULTADO_3C =", round(resultado.3C, 2), "\n\n")
 ```
 
 ### Gráfico de alertas móviles
