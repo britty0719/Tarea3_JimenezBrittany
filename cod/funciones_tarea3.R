@@ -2,8 +2,6 @@
 # Recibe: un data frame de transacciones, ventana y k.alerta.
 # Devuelve: un data frame con las altertas diarias.
 library(dplyr)
-transacciones <- read.csv2("data/transacciones_2025.csv")
-parametros <- read.csv2("config/parametros_tarea3.csv")
 alerta.movil <- function(df, ventana, k.alerta){
   datos.diarios <- df |> 
     count(fecha, name = "n.tx") |> 
@@ -26,4 +24,50 @@ alerta.movil <- function(df, ventana, k.alerta){
   return(datos.diarios)
 }
 
-resultado <- alerta.movil(transacciones, 5, 1.75)
+# Ejercicio 2
+# Recibe: un vector de montos.
+# Devuelve: la desviación absoluta media (MAD)
+
+benford.mad <- function(x){
+  x <- x[!is.na(x) & x > 0]
+  if(length(x) == 0){
+    return(NA_real_)
+  }
+  digitos <- substr(as.character(x), 1, 1)
+  frecuencias <- table(factor(digitos, levels = 1:9))
+  proporciones <- frecuencias/sum(frecuencias)
+  d <- 1:9
+  benford.teorico <- log10(1+ 1/d)
+  diferencia <- abs(proporciones - benford.teorico)
+  mad <- mean(diferencia)
+  return(mad)
+}
+
+# Recibe: un data frame, canal y cantones
+# Devuelve: cod_canton, canton, n, mad y clase
+
+benford.canton <- function(df, canal, cantones){
+  datos.canal <- df |> 
+    filter(canal == .env$canal)
+  resultado <- datos.canal |> 
+    group_by(cod_canton) |> 
+    summarise(
+      n = n(),
+      mad = benford.mad(monto_crc),
+      .groups = "drop"
+    )
+  resultado <- left_join(resultado, cantones, 
+            by = "cod_canton")
+  resultado <- resultado |> 
+    mutate(
+      clase = case_when(
+        mad <= 0.006 ~ "conformidad cercana",
+        mad<= 0.012 ~ "conformidad aceptable",
+        mad <= 0.015 ~ "conformidad marginal",
+    .default = "no conformidad"
+    )
+  ) |> 
+    arrange(desc(mad)) |> 
+    select(cod_canton, canton, n, mad, clase)
+  return(resultado)
+}
