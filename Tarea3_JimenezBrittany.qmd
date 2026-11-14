@@ -8,6 +8,9 @@ format: html
 source("cod/funciones_tarea3.R")
 transacciones <- read.csv2("data/transacciones_2025.csv")
 parametros <- read.csv2("config/parametros_tarea3.csv")
+cantones <- read.csv("data/cantones.csv")
+
+# Ejercicio 1
 
 ventana <- as.numeric(parametros$valor[parametros$parametro == "ventana"])
 k.alerta <- as.numeric(parametros$valor[parametros$parametro == "k.alerta"])
@@ -25,6 +28,29 @@ respuesta.1B <- resultado |>
 # Resultado 1C
 resultado.1C <- alerta.movil(transacciones, 7, 2)
 respuesta.1C <- sum(resultado.1C$alerta, na.rm = TRUE)
+
+# Ejercicio 2
+canal.benford <- parametros$valor[parametros$parametro == "canal.benford"]
+
+# Resultado 2A
+resultado.2 <- filter(transacciones, canal == canal.benford)
+resultado.2A <- round(benford.mad(resultado.2$monto_crc), 4)
+
+# Resultado 2B
+resultado.2B <- benford.canton(transacciones, canal.benford, cantones) |> 
+  slice_head(n = 1) |> 
+  pull(canton)
+
+# Resultado 2C
+resultado.2C <- benford.canton(transacciones, canal.benford, cantones) |> 
+  filter(mad > 0.015)
+respuesta.2C <- nrow(resultado.2C)
+
+# Resultado 2D
+resultado.2D <- benford.canton(transacciones, "Web", cantones) |> 
+  slice_head(n = 1) |> 
+  pull(canton)
+
 ```
 
 ## Hoja de respuestas
@@ -35,6 +61,10 @@ respuesta.1C <- sum(resultado.1C$alerta, na.rm = TRUE)
 cat("RESULTADO_1A =", respuesta.1A, "\n\n")
 cat("RESULTADO_1B =", respuesta.1B, "\n\n")
 cat("RESULTADO_1C =", respuesta.1C, "\n\n")
+cat("RESULTADO_2A =", round(resultado.2A, 4), "\n\n")
+cat("RESULTADO_2B =", resultado.2B, "\n\n")
+cat("RESULTADO_2C =", respuesta.2C, "\n\n")
+cat("RESULTADO_2D =", resultado.2D, "\n\n")
 ```
 
 ### Gráfico de alertas móviles
@@ -71,3 +101,56 @@ ggsave(
 ```
 ![Alertas de transacciones durante 2025](info/figuras/alertas_moviles.png)
 
+### Gráfico de Benford
+
+```{r}
+#| echo: false
+#| include: false
+montos <- resultado.2$monto_crc
+montos <- montos[!is.na(montos) & montos > 0]
+
+digitos <- substr(as.character(montos), 1 , 1)
+frecuencias <- table(factor(digitos, levels = 1:9))
+  proporciones <- frecuencias/sum(frecuencias)
+d <- 1:9
+benford.teorico <- log10(1 + 1/d)
+
+datos.grafico <- data.frame(
+  digito = d,
+  observado = as.numeric(proporciones),
+  teorico = benford.teorico
+)
+grafico.2 <- ggplot(datos.grafico,
+                    aes(x = factor(digito), y = observado)) +
+  geom_col(fill = "steelblue") +
+  geom_line(
+    aes(y = teorico, group = 1),
+    color = "red",
+    linewidth = 1
+  ) +
+  geom_point(
+    aes(y = teorico),
+    color = "red",
+    size = 2
+  ) +
+  labs(
+    title = "Distribución del primer dígito - Canal Cajero",
+    x = "Primer dígito",
+    y = "Proporción"
+  ) +
+  theme_minimal()
+
+grafico.2
+
+ggsave(
+  filename = "info/figuras/benford.png",
+  plot = grafico.2,
+  width = 10,
+  height = 6,
+  dpi = 300
+)
+
+```
+![Distribución de los primeros dígitos del canal Cajero frente a la Ley de Benford](info/figuras/benford.png)
+### Conclusión del Ejercicio 2
+Un MAD elevado no necesariamente indica fraude, ya que puede deberse al bajo número de transacciones de algunos cantones.
