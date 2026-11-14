@@ -152,3 +152,5 @@ ggsave(
 
 ```
 ![Distribución de los primeros dígitos del canal Cajero frente a la Ley de Benford](info/figuras/benford.png)
+### Conclusión del Ejercicio 2
+Un MAD elevado no necesariamente indica fraude, ya que puede deberse al bajo número de transacciones de algunos cantones.
