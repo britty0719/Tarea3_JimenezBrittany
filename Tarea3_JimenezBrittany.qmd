@@ -171,5 +171,55 @@ ggsave(
 
 ```
 ![Distribución de los primeros dígitos del canal Cajero frente a la Ley de Benford](info/figuras/benford.png)
+
 ### Conclusión del Ejercicio 2
 Un MAD elevado no necesariamente indica fraude, ya que puede deberse al bajo número de transacciones de algunos cantones.
+
+# Gráfico de valor acumulado
+
+```{r}
+#| echo: false
+#| include: false
+
+datos.grafico3 <- resultado.3$tabla |>
+  mutate(
+    acumulado = monto * factor
+  )
+
+datos.grafico3 <- datos.grafico3 |>
+  tidyr::pivot_longer(
+    cols = c(monto, acumulado),
+    names_to = "tipo",
+    values_to = "valor"
+  ) |>
+  mutate(
+    tipo = recode(
+      tipo,
+      monto = "Monto depositado",
+      acumulado = "Valor acumulado"
+    )
+  )
+
+grafico.3 <- ggplot(
+  datos.grafico3,
+  aes(x = factor(mes), y = valor, fill = tipo)
+) +
+  geom_col(position = "dodge") +
+  labs(
+    title = "Depósitos mensuales y valor acumulado - Sucursal",
+    x = "Mes",
+    y = "Monto en colones",
+    fill = "Concepto"
+  ) +
+  scale_y_continuous(labels = scales::label_number(big.mark = ",")) +
+  theme_minimal()
+
+ggsave(
+  filename = "info/figuras/valor_acumulado.png",
+  plot = grafico.3,
+  width = 10,
+  height = 6,
+  dpi = 300
+)
+```
+![Depósitos mensuales y valor acumulado del canal Sucursal](info/figuras/valor_acumulado.png)
