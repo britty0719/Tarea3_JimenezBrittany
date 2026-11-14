@@ -8,6 +8,9 @@ format: html
 source("cod/funciones_tarea3.R")
 transacciones <- read.csv2("data/transacciones_2025.csv")
 parametros <- read.csv2("config/parametros_tarea3.csv")
+cantones <- read.csv("data/cantones.csv")
+
+# Ejercicio 1
 
 ventana <- as.numeric(parametros$valor[parametros$parametro == "ventana"])
 k.alerta <- as.numeric(parametros$valor[parametros$parametro == "k.alerta"])
@@ -25,6 +28,29 @@ respuesta.1B <- resultado |>
 # Resultado 1C
 resultado.1C <- alerta.movil(transacciones, 7, 2)
 respuesta.1C <- sum(resultado.1C$alerta, na.rm = TRUE)
+
+# Ejercicio 2
+canal.benford <- parametros$valor[parametros$parametro == "canal.benford"]
+
+# Resultado 2A
+resultado.2 <- filter(transacciones, canal == canal.benford)
+resultado.2A <- round(benford.mad(resultado.2$monto_crc), 4)
+
+# Resultado 2B
+resultado.2B <- benford.canton(transacciones, canal.benford, cantones) |> 
+  slice_head(n = 1) |> 
+  pull(canton)
+
+# Resultado 2C
+resultado.2C <- benford.canton(transacciones, canal.benford, cantones) |> 
+  filter(mad > 0.015)
+respuesta.2C <- nrow(resultado.2C)
+
+# Resultado 2D
+resultado.2D <- benford.canton(transacciones, "Web", cantones) |> 
+  slice_head(n = 1) |> 
+  pull(canton)
+
 ```
 
 ## Hoja de respuestas
@@ -35,6 +61,10 @@ respuesta.1C <- sum(resultado.1C$alerta, na.rm = TRUE)
 cat("RESULTADO_1A =", respuesta.1A, "\n\n")
 cat("RESULTADO_1B =", respuesta.1B, "\n\n")
 cat("RESULTADO_1C =", respuesta.1C, "\n\n")
+cat("RESULTADO_2A =", round(resultado.2A, 4), "\n\n")
+cat("RESULTADO_2B =", resultado.2B, "\n\n")
+cat("RESULTADO_2C =", respuesta.2C, "\n\n")
+cat("RESULTADO_2D =", resultado.2D, "\n\n")
 ```
 
 ### Gráfico de alertas móviles
