@@ -51,6 +51,22 @@ resultado.2D <- benford.canton(transacciones, "Web", cantones) |>
   slice_head(n = 1) |> 
   pull(canton)
 
+# Ejercicio 3
+
+tasa.anual <- as.numeric(parametros$valor[parametros$parametro == "tasa.anual"])
+canal.interes <- parametros$valor[parametros$parametro == "canal.interes"]
+
+# Resultado 3A
+resultado.3 <- valor.acumulado(transacciones, tasa.anual = tasa.anual, canal = canal.interes)
+resultado.3A <- round(resultado.3$va, 2)
+
+# Resultado 3B
+resultado.3B <- round(resultado.3$interes, 2)
+
+# Resultado 3C
+respuesta.3 <- valor.acumulado(transacciones, tasa.anual = 0.06, canal = "App")
+resultado.3C <- round(respuesta.3$va, 2)
+
 ```
 
 ## Hoja de respuestas
@@ -65,6 +81,9 @@ cat("RESULTADO_2A =", round(resultado.2A, 4), "\n\n")
 cat("RESULTADO_2B =", resultado.2B, "\n\n")
 cat("RESULTADO_2C =", respuesta.2C, "\n\n")
 cat("RESULTADO_2D =", resultado.2D, "\n\n")
+cat("RESULTADO_3A =", round(resultado.3A, 2), "\n\n")
+cat("RESULTADO_3B =", round(resultado.3B, 2), "\n\n")
+cat("RESULTADO_3C =", round(resultado.3C, 2), "\n\n")
 ```
 
 ### Gráfico de alertas móviles
@@ -152,5 +171,55 @@ ggsave(
 
 ```
 ![Distribución de los primeros dígitos del canal Cajero frente a la Ley de Benford](info/figuras/benford.png)
+
 ### Conclusión del Ejercicio 2
 Un MAD elevado no necesariamente indica fraude, ya que puede deberse al bajo número de transacciones de algunos cantones.
+
+# Gráfico de valor acumulado
+
+```{r}
+#| echo: false
+#| include: false
+
+datos.grafico3 <- resultado.3$tabla |>
+  mutate(
+    acumulado = monto * factor
+  )
+
+datos.grafico3 <- datos.grafico3 |>
+  tidyr::pivot_longer(
+    cols = c(monto, acumulado),
+    names_to = "tipo",
+    values_to = "valor"
+  ) |>
+  mutate(
+    tipo = recode(
+      tipo,
+      monto = "Monto depositado",
+      acumulado = "Valor acumulado"
+    )
+  )
+
+grafico.3 <- ggplot(
+  datos.grafico3,
+  aes(x = factor(mes), y = valor, fill = tipo)
+) +
+  geom_col(position = "dodge") +
+  labs(
+    title = "Depósitos mensuales y valor acumulado - Sucursal",
+    x = "Mes",
+    y = "Monto en colones",
+    fill = "Concepto"
+  ) +
+  scale_y_continuous(labels = scales::label_number(big.mark = ",")) +
+  theme_minimal()
+
+ggsave(
+  filename = "info/figuras/valor_acumulado.png",
+  plot = grafico.3,
+  width = 10,
+  height = 6,
+  dpi = 300
+)
+```
+![Depósitos mensuales y valor acumulado del canal Sucursal](info/figuras/valor_acumulado.png)
